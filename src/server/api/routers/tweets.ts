@@ -48,9 +48,9 @@ export const tweetRouter = createTRPCRouter({
             id : tweet.id,
             content: tweet.content,
             createdAt: tweet.createdAt,
-            likeCount: tweet._count.likes,
+            likeCount: tweet._count.like,
             user:tweet.user,
-            likedByMe: tweet.likes?.length > 0,
+            likedByMe: tweet.like?.length > 0,
 
         }
     }), nextCursor}

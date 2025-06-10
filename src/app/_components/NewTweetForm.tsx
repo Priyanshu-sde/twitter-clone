@@ -7,7 +7,7 @@ import {  useCallback, useLayoutEffect, useRef, useState, type FormEvent } from 
 import { api } from "~/trpc/react";
 
 function updateTextAreaSize(textArea? : HTMLTextAreaElement) {
-    if(textArea == null) return
+    if(textArea == null) return;
     textArea.style.height = "0"
     textArea.style.height = `${textArea.scrollHeight}px`
 }
@@ -23,7 +23,7 @@ function Form(){
     }, [])
 
 useLayoutEffect(() => {
-    updateTextAreaSize(textAreaRef.current)
+    updateTextAreaSize(textAreaRef.current ?? undefined)
 },[inputValue])     
 
 const createTweet = api.tweet.create.useMutation({
@@ -42,7 +42,7 @@ const createTweet = api.tweet.create.useMutation({
 
     return <form className="flex flex-col gap-2 border-b px-4 py-2">
         <div className="flex gap-4">
-            <ProfileImage src={session.data.user.image}/>
+            {session.data?.user?.image && <ProfileImage src={session.data.user.image} />}
             <textarea 
             ref={inputRef}
             style={{height : 0}}
