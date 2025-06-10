@@ -10,17 +10,34 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
+model Tweet {
+    id String @id @default(uuid())
+    userId String
+    content String
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    like Like[]
+    user User @relation(fields: [userId],references: [id], onDelete: Cascade)
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
+    @@unique([createdAt,id])
+    @@index([userId])
 }
+
+model Like {
+    userId String
+    tweetId String
+
+    
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+    @@id([userId,tweetId])
+    @@index([userId])
+    @@index([tweetId])
+}
+
+
+
 
 // Necessary for Next auth
 model Account {
@@ -58,7 +75,12 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
+
+
+    tweet         Tweet[]
+    likes   Like[]
+    followers User[] @relation(name: "Followers ")
+    follows User[] @relation(name: "Followers ")
 }
 
 model VerificationToken {
