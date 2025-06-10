@@ -24,8 +24,8 @@ export const tweetRouter = createTRPCRouter({
             id:true,
             content: true,
             createdAt: true,
-            _count : {select : {likes :true}},
-            likes : 
+            _count : {select : {like :true}},
+            like : 
                 currentUserId == null
                 ? false 
                 : {where : {userId: currentUserId}},

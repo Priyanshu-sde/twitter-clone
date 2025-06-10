@@ -13,16 +13,8 @@ export default async function Home() {
         <h1 className="mb-2 px-4 text-lg font-bold">Home</h1>
       </header>
       <NewTweetForm />
-      <RecentTweets/>
+      <InfinityTweetList/>
     </>
   );
 };
 
-function RecentTweets() {
-  const tweets =  api.tweet.infiniteFeed.useInfiniteQuerry(
-    {},
-    {getNextPage}
-  )
-
-  return <InfinityTweetList tweets = {tweets}/>
-}
