@@ -6,6 +6,7 @@ import { ProfileImage } from "./ProfileImage";
 import { useSession } from "next-auth/react";
 import {VscHeartFilled, VscHeart} from "react-icons/vsc";
 import { IconHoverEffect } from "./iconHoverEffect";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 
 type Tweet = {
@@ -17,36 +18,79 @@ type Tweet = {
     user: { id: string; image: string | null; name: string | null };
 };
 
-export function InfinityTweetList() {
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        isLoading,
-        isError
-    } = api.tweet.infiniteFeed.useInfiniteQuery(
-        {limit: 10},
-        {
-            getNextPageParam: (lastPage) => lastPage.nextCursor,
-         }
-    );
-    if (isLoading) return <div className="p-4">Loading tweets...</div>;
+type InfinityTweetListProps = {
+    isLoading: boolean;
+    isError: boolean;
+    hasMore: boolean | undefined;
+    fetchNewTweets : () => Promise<unknown>;
+    tweets?: Tweet[];
+}
+
+export function InfinityTweetList({
+    tweets,    
+    isLoading,
+    isError,
+    fetchNewTweets,
+    hasMore = false,
+} : InfinityTweetListProps) {
+    
+    if (isLoading) return <LoadingSpinner/>;
     if (isError) return <div className="p-4 text-red-500">Error loading tweets</div>;
-    const tweets = data?.pages.flatMap(page => page.tweets) ?? [];
+    if(tweets == null || tweets.length == 0){
+        return (
+            <h2 className="my-4 text-center text-2xl text-gray-500">No Tweets</h2>
+        )
+    }
 
     return (
       <InfiniteScroll
         dataLength={tweets.length}
-        next={fetchNextPage}
-        hasMore={hasNextPage ?? false}
-        loader={<div className="p-4">Loading more tweets...</div>}
+        next={fetchNewTweets}
+        hasMore={hasMore}
+        loader={<LoadingSpinner/>}
         endMessage={<div className="p-4 text-center text-gray-500">No more tweets to load</div>}
       >
         {tweets.map((tweet) => ( <TweetCard key={tweet.id}{...tweet}/>
         ))}
       </InfiniteScroll>
     );
+  
+}
+
+export function RecentTweetList() {
+    const tweets = api.tweet.infiniteFeed.useInfiniteQuery(
+        {limit: 10},
+        {
+            getNextPageParam: (lastPage) => lastPage.nextCursor,
+         }
+        );
+        
+        return (
+            <InfinityTweetList
+            tweets={tweets.data?.pages.flatMap((page) => page.tweets)}
+            isError={tweets.isError}
+            isLoading={tweets.isLoading}
+            hasMore={tweets.hasNextPage}
+            fetchNewTweets={tweets.fetchNextPage}
+            />
+        )
+}
+
+export function FollowingTweetList() {
+    const tweets = api.tweet.infiniteFeed.useInfiniteQuery(
+        {onlyFollowing : true},
+        {getNextPageParam : (lastpage) => lastpage.nextCursor}
+    );
+
+    return (
+        <InfinityTweetList
+        tweets={tweets.data?.pages.flatMap((page) => page.tweets)}
+        isError={tweets.isError}
+        isLoading={tweets.isLoading}
+        hasMore={tweets.hasNextPage}
+        fetchNewTweets={tweets.fetchNextPage}
+        />
+    )
   
 }
 
@@ -88,7 +132,7 @@ function TweetCard({
                 })
             }
         }
-         trpcUtils.tweet.infiniteFeed.setInfiniteData({}, updateData);
+         trpcUtils.tweet.infiniteFeed.setInfiniteData({limit:10}, updateData);
     }})
 
     function handleToggleLike() {
@@ -154,3 +198,4 @@ function HeartButton ({likeCount, isLoading, onClick, likedByMe} : HeartButtonPr
     )
 
 }
+
