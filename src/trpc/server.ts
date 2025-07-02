@@ -28,3 +28,6 @@ export const { trpc: api, HydrateClient } = createHydrationHelpers<AppRouter>(
   caller,
   getQueryClient,
 );
+
+
+export const directApi = caller;
